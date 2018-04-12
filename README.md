@@ -10,3 +10,50 @@
 
 调用的库：selenium —— selenium 是一套完整的web应用程序测试系统，包含了测试的录制（selenium IDE）,编写及运行（Selenium Remote Control）和测试的并行处理（Selenium Grid）。Selenium的核心Selenium Core基于JsUnit，完全由JavaScript编写，因此可以用于任何支持JavaScript的浏览器上。
 
+以下就是代码啦~
+
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 30 17:43:24 2018
+
+@author: Administrator
+"""
+
+############访问页面###############
+from selenium import webdriver
+ 
+browser = webdriver.Firefox()
+browser.get('http://zhihu.sogou.com/')
+
+############输入关键词#############
+input = browser.find_element_by_id('query')
+input.send_keys('管理')#关键词在此
+
+button = browser.find_element_by_class_name('swz')
+button.click()#点击搜索框
+
+############找到所有问题并保存###################
+from bs4 import BeautifulSoup
+import pandas as pd
+
+sreach_window=browser.current_window_handle#切换到新页面
+
+all_html = browser.find_elements_by_class_name('result-about-list')
+
+result = []
+
+for html in all_html:
+    #html = all_html[1]
+    html = html.get_attribute('innerHTML')
+    soup = BeautifulSoup(html,'lxml')
+    #print(soup)
+    question = soup.find('a').get_text()
+    summary = soup.find('a', {'class':'link-white-pre'}).get_text()
+    #print(summary)    
+    question_url = soup.find('a', {'class':'link-white-pre'}).get('href')
+    sdata = {'question':question, 'summary':summary, 'question_url':question_url}
+    #print(sdata)
+    result.append(sdata)
+
+result = pd.DataFrame(result)  
+print(result)  
